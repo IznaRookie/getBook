@@ -1,22 +1,19 @@
-import os
-import random
-from unittest import mock
-from fastapi.testclient import TestClient
-from main import app
+import pytest
+from uuid import uuid4
+from time import sleep
+from datetime import datetime
+from main import root, get_list
+import json
+import asyncio
+from fastapi import Query
 
-client = TestClient(app)
-
-@mock.patch('main.requests.get')
-def test_read_root(mock_get):
-    mock_get.return_value.json.return_value = {"book_id": "Mocked Book"}
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "book_id" in response.json()
+def test_read_root():
+    res = asyncio.run(root())
+    assert 'pages' in res.keys()
+    assert (type(res['pages']) == int)
 
 
-@mock.patch('main.requests.get')
-def test_read_list(mock_get):
-    mock_get.return_value.json.return_value = {"book_id": "Mocked Book"}
-    response = client.get("/list/?q=1")
-    assert response.status_code == 200
-    assert all("book_id" in item for item in response.json())
+def test_read_list():
+    res = asyncio.run(get_list(q=[1]))
+    res = res[0]
+    assert (res['pages'] == 368)
